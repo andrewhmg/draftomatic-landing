@@ -227,6 +227,111 @@
     gap: 10px;
     flex-wrap: wrap;
   }
+  .artifact-body { min-height: 258px; }
+
+  /* typewriter caret */
+  .typing::after {
+    content: "▍";
+    color: var(--accent);
+    animation: blink 1s steps(1) infinite;
+    font-weight: 400;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* fields fill-in */
+  .afield code { transition: opacity 0.3s ease; }
+  .afield.pending code { opacity: 0; }
+
+  /* ---------- playground ---------- */
+  .playground {
+    margin-top: 56px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .pg-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .pg-bar .dot { color: var(--accent); }
+  .pg-body { padding: 30px 30px 34px; }
+  .pg-input-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pg-input-row input {
+    flex: 1 1 300px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    padding: 13px 16px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .pg-input-row input:focus { border-color: var(--accent); }
+  .pg-input-row input::placeholder { color: var(--faint); }
+  .pg-input-row button {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 15.5px;
+    padding: 13px 22px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .pg-input-row button:hover { background: #5CBBFF; }
+  .pg-input-row button:disabled { opacity: 0.6; cursor: default; }
+  .pg-examples { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pg-examples .lbl { font-size: 13px; color: var(--faint); margin-right: 4px; }
+  .pg-ex {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .pg-ex:hover { border-color: rgba(53, 170, 255, 0.4); color: var(--ink); }
+  .pg-output { margin-top: 26px; display: none; }
+  .pg-output.show { display: block; }
+  .pg-stage {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--accent);
+    margin-bottom: 18px;
+    min-height: 18px;
+  }
+  .pg-headline {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 18px;
+    text-wrap: balance;
+  }
+  .pg-fields { display: grid; gap: 8px; margin-bottom: 20px; }
+  .pg-note { font-size: 13px; color: var(--faint); }
+
+  /* scroll reveal */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; }
+    .typing::after { animation: none; }
+    .hero-copy, .artifact { animation: none; }
+  }
   .chip {
     font-family: var(--mono);
     font-size: 11.5px;
@@ -439,18 +544,18 @@
           <span>draftomatic — new article</span>
           <span class="dot">●</span>
         </div>
-        <div class="artifact-body">
-          <p class="field-label">Draft · ready to publish</p>
-          <p class="artifact-title">How we built a multi-location booking flow in a weekend</p>
+        <div class="artifact-body" id="artifact-body">
+          <p class="field-label" id="artifact-status">Drafting…</p>
+          <p class="artifact-title" id="artifact-title">&nbsp;</p>
           <div class="artifact-fields">
-            <div class="afield"><span>slug</span><code>/blog/multi-location-booking-flow</code></div>
-            <div class="afield"><span>meta</span><code>A behind-the-scenes look at shipping…</code></div>
-            <div class="afield"><span>keywords</span><code>booking flow · scheduling · multi-location</code></div>
+            <div class="afield pending" id="af-slug"><span>slug</span><code></code></div>
+            <div class="afield pending" id="af-meta"><span>meta</span><code></code></div>
+            <div class="afield pending" id="af-kw"><span>keywords</span><code></code></div>
           </div>
           <div class="artifact-meta">
             <span class="chip accent">→ Framer CMS</span>
             <span class="chip">your tone</span>
-            <span class="chip">human-approved</span>
+            <span class="chip" id="artifact-chip">human-approved</span>
           </div>
         </div>
       </div>
@@ -461,7 +566,7 @@
       <h2>From your existing site to a ranked article — three steps.</h2>
       <p class="section-sub">No blank page. No keyword soup. Draftomatic starts from the business your site already describes.</p>
 
-      <div class="steps">
+      <div class="steps reveal">
         <div class="step">
           <span class="step-num">01</span>
           <div>
@@ -486,12 +591,49 @@
       </div>
     </section>
 
+    <section id="playground">
+      <p class="section-label">Try it</p>
+      <h2>Watch a draft happen.</h2>
+      <p class="section-sub">Type any topic from your own business. This little simulation shows what Draftomatic hands you — the real product generates it from your actual Framer site.</p>
+
+      <div class="playground reveal">
+        <div class="pg-bar">
+          <span>draftomatic — playground</span>
+          <span class="dot">●</span>
+        </div>
+        <div class="pg-body">
+          <div class="pg-input-row">
+            <input type="text" id="pg-input" placeholder="e.g. catering pricing, bike repairs, estate planning…" aria-label="Topic to draft">
+            <button id="pg-go">Draft it →</button>
+          </div>
+          <div class="pg-examples">
+            <span class="lbl">Try:</span>
+            <button type="button" class="pg-ex" data-topic="catering pricing">catering pricing</button>
+            <button type="button" class="pg-ex" data-topic="bike repairs">bike repairs</button>
+            <button type="button" class="pg-ex" data-topic="estate planning">estate planning</button>
+            <button type="button" class="pg-ex" data-topic="dog grooming">dog grooming</button>
+          </div>
+
+          <div class="pg-output" id="pg-output" aria-live="polite">
+            <p class="pg-stage" id="pg-stage"></p>
+            <p class="pg-headline" id="pg-headline"></p>
+            <div class="pg-fields artifact-fields">
+              <div class="afield" id="pg-slug"><span>slug</span><code></code></div>
+              <div class="afield" id="pg-meta"><span>meta</span><code></code></div>
+              <div class="afield" id="pg-kw"><span>keywords</span><code></code></div>
+            </div>
+            <p class="pg-note">Simulation — the real Draftomatic writes this from your site's actual content, then publishes to your CMS after your approval.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section>
       <p class="section-label">Why not just use an AI writer?</p>
       <h2>Not another content blender.</h2>
       <p class="section-sub">Generic AI blog tools generate articles from a keyword and a prayer. Draftomatic is grounded in the site you already built — and it speaks Framer natively.</p>
 
-      <div class="compare">
+      <div class="compare reveal">
         <div class="compare-row">
           <div class="compare-head them">Generic AI blog tools</div>
           <div class="compare-head us">Draftomatic</div>
@@ -515,7 +657,7 @@
       <p class="section-label">Questions</p>
       <h2>The honest answers.</h2>
 
-      <div class="faq">
+      <div class="faq reveal">
         <details open>
           <summary>Will this flood my blog with generic AI slop?</summary>
           <p>No — that's the failure mode Draftomatic is built against. Every article is grounded in your real site content, proposed to you as a plan before drafting, and held for your approval before anything publishes.</p>
@@ -532,7 +674,7 @@
     </section>
 
     <section class="cta-section" id="early-access">
-      <div class="cta-inner">
+      <div class="cta-inner reveal">
         <p class="section-label">Early access</p>
         <h2>Be first in line when <em>drafts start writing themselves.</em></h2>
         <p class="section-sub">Draftomatic is in active development. Leave your email and we'll reach out when the first version opens up — no spam, no newsletter you didn't ask for.</p>
@@ -630,6 +772,182 @@
         showStatus("Signups aren't collected on this preview. Once Draftomatic is hosted, submissions save automatically — meanwhile, email us and you're in.", "warn");
       });
   });
+</script>
+
+<script>
+  (function () {
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* ---------- hero artifact: self-writing draft loop ---------- */
+    var DRAFTS = [
+      {
+        title: "How we built a multi-location booking flow in a weekend",
+        slug: "/blog/multi-location-booking-flow",
+        meta: "A behind-the-scenes look at shipping scheduling that scales.",
+        kw: "booking flow · scheduling · multi-location"
+      },
+      {
+        title: "Five pricing mistakes service businesses make (and how to fix them)",
+        slug: "/blog/pricing-mistakes-service-businesses",
+        meta: "Where service pricing quietly leaks margin — and the fixes.",
+        kw: "pricing · services · margin"
+      },
+      {
+        title: "What customers actually read on your services page",
+        slug: "/blog/what-customers-read-services-page",
+        meta: "How buyers scan a services page before they contact you.",
+        kw: "services page · conversion · copy"
+      }
+    ];
+
+    var aTitle = document.getElementById("artifact-title");
+    var aStatus = document.getElementById("artifact-status");
+    var aFields = {
+      slug: document.getElementById("af-slug"),
+      meta: document.getElementById("af-meta"),
+      kw: document.getElementById("af-kw")
+    };
+
+    function typeText(el, text, speed, done) {
+      el.classList.add("typing");
+      var i = 0;
+      (function tick() {
+        if (reduceMotion) { el.textContent = text; return done(); }
+        el.textContent = text.slice(0, ++i);
+        if (i < text.length) return setTimeout(tick, speed);
+        el.classList.remove("typing");
+        done();
+      })();
+    }
+
+    function setField(el, value) {
+      var code = el.querySelector("code");
+      code.textContent = value;
+      el.classList.remove("pending");
+    }
+
+    function clearFields() {
+      Object.keys(aFields).forEach(function (k) {
+        aFields[k].querySelector("code").textContent = "";
+        aFields[k].classList.add("pending");
+      });
+    }
+
+    function playDraft(idx) {
+      var d = DRAFTS[idx];
+      aStatus.textContent = "Drafting…";
+      aTitle.textContent = "\u00a0";
+      clearFields();
+      typeText(aTitle, d.title, reduceMotion ? 0 : 26, function () {
+        aStatus.textContent = "Filling CMS fields…";
+        setField(aFields.slug, d.slug);
+        setTimeout(function () { setField(aFields.meta, d.meta); }, reduceMotion ? 0 : 340);
+        setTimeout(function () { setField(aFields.kw, d.kw); }, reduceMotion ? 0 : 680);
+        setTimeout(function () {
+          aStatus.textContent = "Ready to publish";
+          setTimeout(function () { playDraft((idx + 1) % DRAFTS.length); }, reduceMotion ? 5000 : 3400);
+        }, reduceMotion ? 0 : 1050);
+      });
+    }
+    if (aTitle) playDraft(0);
+
+    /* ---------- scroll reveal ---------- */
+    var revealEls = document.querySelectorAll(".reveal");
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      revealEls.forEach(function (el) { el.classList.add("in"); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+
+    /* ---------- playground ---------- */
+    function titleCase(s) {
+      return s.replace(/\S+/g, function (w) { return w.charAt(0).toUpperCase() + w.slice(1); });
+    }
+
+    function generate(topicRaw) {
+      var topic = topicRaw.trim().replace(/\s+/g, " ").toLowerCase();
+      var T = titleCase(topic);
+      var heads = [
+        "The honest guide to " + T + ": what it costs and what it's worth",
+        "How to think about " + T + " before you spend a dollar",
+        T + ": 5 questions to ask before you commit",
+        "What most people get wrong about " + T,
+        T + ", explained like you're the customer"
+      ];
+      var sum = 0;
+      for (var i = 0; i < topic.length; i++) sum += topic.charCodeAt(i);
+      var head = heads[sum % heads.length];
+      var slug = "/blog/" + topic.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      var meta = "A practical, no-fluff look at " + topic + " — what to expect, what to avoid, and what it's worth.";
+      var kw = topic + " · " + topic + " cost · " + topic + " guide";
+      return { title: head, slug: slug, meta: meta, kw: kw };
+    }
+
+    var pgInput = document.getElementById("pg-input");
+    var pgGo = document.getElementById("pg-go");
+    var pgOut = document.getElementById("pg-output");
+    var pgStage = document.getElementById("pg-stage");
+    var pgHead = document.getElementById("pg-headline");
+    var pgFields = {
+      slug: document.getElementById("pg-slug"),
+      meta: document.getElementById("pg-meta"),
+      kw: document.getElementById("pg-kw")
+    };
+
+    function runPlayground(raw) {
+      var topic = (raw || "").trim();
+      if (!topic) { pgInput.focus(); return; }
+      pgInput.value = topic;
+      pgGo.disabled = true;
+      pgOut.classList.add("show");
+      pgHead.textContent = "";
+      Object.keys(pgFields).forEach(function (k) {
+        pgFields[k].querySelector("code").textContent = "";
+        pgFields[k].classList.add("pending");
+      });
+
+      var stages = [
+        [650, "reading your site…"],
+        [750, "finding keywords you can win…"],
+        [550, "drafting…"]
+      ];
+      var si = 0;
+      (function stageLoop() {
+        if (si < stages.length) {
+          pgStage.textContent = stages[si][1];
+          si++;
+          setTimeout(stageLoop, reduceMotion ? 60 : stages[si - 1][0]);
+          return;
+        }
+        var g = generate(topic);
+        pgStage.textContent = "ready → Framer CMS";
+        typeText(pgHead, g.title, reduceMotion ? 0 : 22, function () {
+          setField(pgFields.slug, g.slug);
+          setTimeout(function () { setField(pgFields.meta, g.meta); }, reduceMotion ? 0 : 300);
+          setTimeout(function () {
+            setField(pgFields.kw, g.kw);
+            pgGo.disabled = false;
+            pgInput.focus();
+          }, reduceMotion ? 0 : 600);
+        });
+      })();
+    }
+
+    if (pgGo) {
+      pgGo.addEventListener("click", function () { runPlayground(pgInput.value); });
+      pgInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); runPlayground(pgInput.value); }
+      });
+      document.querySelectorAll(".pg-ex").forEach(function (b) {
+        b.addEventListener("click", function () { runPlayground(b.getAttribute("data-topic")); });
+      });
+    }
+  })();
 </script>
 
 </body>
