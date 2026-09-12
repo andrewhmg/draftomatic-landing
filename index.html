@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draftomatic — your Framer site, writing its own blog</title>
+<meta name="description" content="Draftomatic reads your Framer site, drafts SEO-ready articles in your voice, and publishes them straight to your Framer CMS.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0C0E;
+    --surface: #14161A;
+    --surface-2: #1A1D22;
+    --ink: #F4F5F7;
+    --muted: #A3A9B3;
+    --faint: #6B7280;
+    --border: rgba(255, 255, 255, 0.09);
+    --accent: #35AAFF;
+    --accent-ink: #05131F;
+    --sans: "Instrument Sans", system-ui, sans-serif;
+    --serif: "Instrument Serif", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(11, 12, 14, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  .wordmark {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+  }
+  .wordmark span { color: var(--accent); }
+  .top-cta {
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .top-cta:hover { background: var(--surface-2); border-color: rgba(255,255,255,0.2); }
+
+  /* ---------- hero ---------- */
+  .hero {
+    padding: 96px 0 88px;
+    display: grid;
+    grid-template-columns: 1.25fr 0.9fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 22px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(38px, 5vw, 58px);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin-bottom: 24px;
+  }
+  h1 em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .hero-sub {
+    font-size: 19px;
+    color: var(--muted);
+    max-width: 46ch;
+    margin-bottom: 36px;
+    text-wrap: pretty;
+  }
+  .hero-sub strong { color: var(--ink); font-weight: 600; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 14px 26px;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { background: #5CBBFF; }
+  .btn-ghost { border: 1px solid var(--border); color: var(--ink); }
+  .btn-ghost:hover { background: var(--surface-2); border-color: rgba(255,255,255,0.2); }
+
+  /* hero product card — typographic mock of the actual output */
+  .artifact {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+  .artifact-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .artifact-bar .dot { color: var(--accent); }
+  .artifact-body { padding: 24px 26px 28px; }
+  .field-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 6px;
+  }
+  .artifact-title {
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 18px;
+    text-wrap: balance;
+  }
+  .artifact-skel { display: grid; gap: 9px; margin-bottom: 22px; }
+  .artifact-skel i {
+    display: block;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--surface-2);
+  }
+  .artifact-skel i:nth-child(2) { width: 92%; }
+  .artifact-skel i:nth-child(3) { width: 97%; }
+  .artifact-skel i:nth-child(4) { width: 64%; }
+  .artifact-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .chip.accent { color: var(--accent); border-color: rgba(53, 170, 255, 0.35); }
+
+  /* ---------- sections ---------- */
+  section { padding: 84px 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h2 {
+    font-size: clamp(28px, 3.4vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    margin-bottom: 18px;
+    text-wrap: balance;
+  }
+  .section-sub { color: var(--muted); font-size: 18px; max-width: 56ch; text-wrap: pretty; }
+
+  /* how it works */
+  .steps { margin-top: 56px; display: grid; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 28px;
+    padding: 34px 0;
+    border-top: 1px solid var(--border);
+  }
+  .step:first-child { border-top: none; padding-top: 0; }
+  .step-num {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--accent);
+    padding-top: 5px;
+  }
+  .step-num::before { content: "/"; color: var(--faint); margin-right: 6px; }
+  .step h3 { font-size: 21px; font-weight: 600; margin-bottom: 8px; }
+  .step p { color: var(--muted); max-width: 58ch; }
+
+  /* compare */
+  .compare { margin-top: 56px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .compare-row + .compare-row { border-top: 1px solid var(--border); }
+  .compare-cell { padding: 22px 28px; font-size: 16px; }
+  .compare-cell.them { color: var(--faint); background: rgba(255, 255, 255, 0.015); }
+  .compare-cell.us { background: rgba(53, 170, 255, 0.05); }
+  .compare-head { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; padding: 16px 28px; }
+  .compare-head.them { color: var(--faint); }
+  .compare-head.us { color: var(--accent); }
+  .compare-cell em { font-style: normal; color: var(--ink); font-weight: 600; }
+
+  /* faq */
+  .faq { margin-top: 48px; max-width: 760px; }
+  .faq details { border-top: 1px solid var(--border); }
+  .faq details:last-child { border-bottom: 1px solid var(--border); }
+  .faq summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 22px 4px;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+";
+    font-family: var(--mono);
+    color: var(--accent);
+    font-size: 20px;
+    transition: transform 0.15s ease;
+  }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq p { color: var(--muted); padding: 0 4px 24px; max-width: 60ch; }
+
+  /* cta / form */
+  .cta-section { padding: 96px 0 110px; }
+  .cta-inner { max-width: 640px; }
+  .cta-inner h2 em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+  }
+  .cta-inner .section-sub { margin-bottom: 36px; }
+  .signup { display: flex; gap: 12px; flex-wrap: wrap; }
+  .signup input[type="email"] {
+    flex: 1 1 260px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    padding: 14px 18px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .signup input[type="email"]::placeholder { color: var(--faint); }
+  .signup input[type="email"]:focus { border-color: var(--accent); }
+  .signup button {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 16px;
+    padding: 14px 26px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .signup button:hover { background: #5CBBFF; }
+  .signup button:disabled { opacity: 0.65; cursor: default; }
+  .hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .form-status {
+    display: none;
+    margin-top: 16px;
+    font-size: 15.5px;
+    line-height: 1.5;
+  }
+  .form-status.show { display: block; }
+  .form-status.ok { color: #4ADE80; }
+  .form-status.warn { color: #FBBF24; }
+  .form-status a { color: inherit; text-decoration: underline; }
+  .alt-contact { margin-top: 20px; font-size: 14.5px; color: var(--faint); }
+  .alt-contact a { color: var(--muted); }
+  .alt-contact a:hover { color: var(--accent); }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 34px 0 44px;
+    font-size: 14px;
+    color: var(--faint);
+  }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding: 64px 0 72px; gap: 48px; }
+    .step { grid-template-columns: 64px 1fr; gap: 20px; }
+  }
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 20px; }
+    section { padding: 64px 0; }
+    .compare-row { grid-template-columns: 1fr; }
+    .compare-cell.us { border-top: 1px dashed var(--border); }
+    .signup { flex-direction: column; }
+    .signup button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="wordmark" href="#top">draftomatic<span>_</span></a>
+    <a class="top-cta" href="#early-access">Request early access</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+
+    <div class="hero">
+      <div>
+        <p class="kicker">A content engine for Framer sites</p>
+        <h1>Your Framer site should <em>write its own blog.</em></h1>
+        <p class="hero-sub">
+          Draftomatic reads the site you already built, drafts <strong>SEO-ready articles in your voice</strong>,
+          and publishes them straight into your Framer CMS — fully formatted. You review, it ships.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#early-access">Request early access</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+      </div>
+
+      <div class="artifact" aria-hidden="true">
+        <div class="artifact-bar">
+          <span>draftomatic — new article</span>
+          <span class="dot">●</span>
+        </div>
+        <div class="artifact-body">
+          <p class="field-label">Draft · grounded in your site</p>
+          <p class="artifact-title">How we built a multi-location booking flow in a weekend</p>
+          <div class="artifact-skel">
+            <i></i><i></i><i></i><i></i>
+          </div>
+          <div class="artifact-meta">
+            <span class="chip accent">SEO 92</span>
+            <span class="chip">matches your tone</span>
+            <span class="chip">→ Framer CMS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section id="how">
+      <p class="section-label">How it works</p>
+      <h2>From your existing site to a ranked article — three steps.</h2>
+      <p class="section-sub">No blank page. No keyword soup. Draftomatic starts from the business your site already describes.</p>
+
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">01</span>
+          <div>
+            <h3>Point it at your site</h3>
+            <p>Draftomatic reads your Framer pages and learns what you do, who it's for, and how you talk about it — your topics, your tone, your audience.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-num">02</span>
+          <div>
+            <h3>Approve the draft plan</h3>
+            <p>It proposes articles around search terms you can realistically win, grounded in your actual offering. Edit anything — outline, title, angle — before a word is published.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-num">03</span>
+          <div>
+            <h3>Publish to your Framer CMS</h3>
+            <p>Finished articles land directly in your CMS collection with title, slug, meta, and body already formatted. Nothing to copy, nothing to clean up.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-label">Why not just use an AI writer?</p>
+      <h2>Not another content blender.</h2>
+      <p class="section-sub">Generic AI blog tools generate articles from a keyword and a prayer. Draftomatic is grounded in the site you already built — and it speaks Framer natively.</p>
+
+      <div class="compare">
+        <div class="compare-row">
+          <div class="compare-head them">Generic AI blog tools</div>
+          <div class="compare-head us">Draftomatic</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell them">Writes from a keyword, with no idea what your business actually does.</div>
+          <div class="compare-cell us"><em>Grounded in your site</em> — every draft comes from your own pages and offering.</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell them">Hands you a Markdown file and wishes you luck.</div>
+          <div class="compare-cell us"><em>Publishes straight into your Framer CMS</em>, formatted to your fields.</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell them">One bland voice fits all — sounds like everyone else's blog.</div>
+          <div class="compare-cell us"><em>Matches your tone</em>, learned from the copy you already wrote.</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-label">Questions</p>
+      <h2>The honest answers.</h2>
+
+      <div class="faq">
+        <details open>
+          <summary>Will this flood my blog with generic AI slop?</summary>
+          <p>No — that's the failure mode Draftomatic is built against. Every article is grounded in your real site content, proposed to you as a plan before drafting, and held for your approval before anything publishes.</p>
+        </details>
+        <details>
+          <summary>Do I have to leave Framer to use it?</summary>
+          <p>No. Draftomatic connects to your Framer CMS directly and publishes into your existing collection and fields. There's no export step, no Markdown wrangling, no plugin juggling.</p>
+        </details>
+        <details>
+          <summary>Who is this for?</summary>
+          <p>Founders, freelancers, and small studios running their site on Framer who know organic traffic matters — but can't spend a day a week writing blog posts about it.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="cta-section" id="early-access">
+      <div class="cta-inner">
+        <p class="section-label">Early access</p>
+        <h2>Be first in line when <em>drafts start writing themselves.</em></h2>
+        <p class="section-sub">Draftomatic is in active development. Leave your email and we'll reach out when the first version opens up — no spam, no newsletter you didn't ask for.</p>
+
+        <form class="signup" id="signup-form" name="early-access" method="POST" netlify netlify-honeypot="company">
+          <input type="hidden" name="form-name" value="early-access">
+          <input type="text" name="company" id="company" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <input type="email" id="email" name="email" placeholder="you@yourstudio.com" required aria-label="Your email address">
+          <button type="submit" id="submit-btn">Request early access</button>
+        </form>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        <p class="alt-contact">Prefer email? Reach us directly at <a href="mailto:andrewhogge1@gmail.com">andrewhogge1@gmail.com</a></p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Draftomatic</span>
+    <span>draftomatic.io</span>
+  </div>
+</footer>
+
+<script>
+  // Email collection (FormSubmit — works on any static host, forwards to your inbox):
+  // 1. Replace FORMSUBMIT_EMAIL with your real inbox.
+  // 2. Submit the form once from the live site; FormSubmit emails you a
+  //    one-time activation link. Click it — from then on, signups forward to you.
+  // If the backend isn't activated yet, the form falls back to opening a
+  // pre-filled email draft, so the page still works either way.
+  var BACKEND = "formsubmit";
+  var FORMSUBMIT_EMAIL = "andrewhogge1@gmail.com";   // signups forward here
+
+  var form = document.getElementById("signup-form");
+  var statusEl = document.getElementById("form-status");
+  var btn = document.getElementById("submit-btn");
+  var emailInput = document.getElementById("email");
+
+  function showStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = "form-status show" + (cls ? " " + cls : "");
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = emailInput.value.trim();
+    if (!email) return;
+
+    if (BACKEND === "formsubmit") {
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+      fetch("https://formsubmit.co/ajax/" + FORMSUBMIT_EMAIL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ _subject: "Draftomatic early access", email: email })
+      })
+        .then(function (res) { if (!res.ok) throw new Error("status " + res.status); return res.json(); })
+        .then(function (data) {
+          // FormSubmit returns 200 even on failure (e.g. local file, not
+          // activated) — only trust an explicit success flag.
+          if (!data || !(data.success === true || data.success === "true")) throw new Error("not accepted");
+          btn.textContent = "Request received ✓";
+          showStatus("You're on the list — we'll email you when Draftomatic opens up.", "ok");
+          form.reset();
+        })
+        .catch(function () {
+          // Backend not activated / unreachable — fall back to a pre-filled
+          // email draft so the request still gets through.
+          btn.disabled = false;
+          btn.textContent = "Request early access";
+          showStatus("Opening your email app so you can send the request directly — or just email ", "warn");
+          statusEl.innerHTML = "Opening your email app so you can send the request directly — or email <a href=\"mailto:" + FORMSUBMIT_EMAIL + "?subject=" + encodeURIComponent("Draftomatic early access") + "&body=" + encodeURIComponent("I'd like early access. My email: " + email) + "\">" + FORMSUBMIT_EMAIL + "</a> directly.";
+          window.location.href = "mailto:" + FORMSUBMIT_EMAIL + "?subject=" + encodeURIComponent("Draftomatic early access") + "&body=" + encodeURIComponent("Hi — I'd like early access to Draftomatic.\n\nMy email: " + email + "\n");
+        });
+      return;
+    }
+
+    // Netlify Forms: POST urlencoded to "/" on the same origin.
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+    var body = new URLSearchParams({ "form-name": "early-access", "email": email }).toString();
+    fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body })
+      .then(function (res) { if (!res.ok) throw new Error("status " + res.status); })
+      .then(function () {
+        btn.textContent = "Request received ✓";
+        showStatus("You're on the list — we'll email you when Draftomatic opens up.", "ok");
+        form.reset();
+      })
+      .catch(function () {
+        // Not hosted on Netlify (local preview, other host) — collection unavailable here.
+        btn.disabled = false;
+        btn.textContent = "Request early access";
+        showStatus("Signups aren't collected on this preview. Once Draftomatic is hosted, submissions save automatically — meanwhile, email us and you're in.", "warn");
+      });
+  });
+</script>
+
+</body>
+</html>
