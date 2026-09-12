@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Draftomatic — your Framer site, writing its own blog</title>
 <meta name="description" content="Draftomatic reads your Framer site, drafts SEO-ready articles in your voice, and publishes them straight to your Framer CMS.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%230B0C0E'/%3E%3Ctext%20x='32'%20y='43'%20font-family='monospace'%20font-size='28'%20font-weight='600'%20fill='%2335AAFF'%20text-anchor='middle'%3Ed_%3C/text%3E%3C/svg%3E">
+<meta property="og:title" content="Draftomatic — your Framer site, writing its own blog">
+<meta property="og:description" content="Draftomatic reads your Framer site, drafts SEO-ready articles in your voice, and publishes them straight to your Framer CMS.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -86,12 +90,30 @@
 
   /* ---------- hero ---------- */
   .hero {
+    position: relative;
     padding: 96px 0 88px;
     display: grid;
     grid-template-columns: 1.25fr 0.9fr;
     gap: 64px;
     align-items: center;
   }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+    background-size: 26px 26px;
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 78%);
+    mask-image: linear-gradient(to bottom, black 0%, transparent 78%);
+    pointer-events: none;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  .hero-copy { animation: rise 0.6s ease-out both; }
+  .artifact { animation: rise 0.6s 0.12s ease-out both; }
   .kicker {
     font-family: var(--mono);
     font-size: 12px;
@@ -134,8 +156,8 @@
     transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
   }
   .btn:active { transform: scale(0.98); }
-  .btn-primary { background: var(--accent); color: var(--accent-ink); }
-  .btn-primary:hover { background: #5CBBFF; }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 8px 28px rgba(53, 170, 255, 0.28); }
+  .btn-primary:hover { background: #5CBBFF; box-shadow: 0 10px 32px rgba(53, 170, 255, 0.38); }
   .btn-ghost { border: 1px solid var(--border); color: var(--ink); }
   .btn-ghost:hover { background: var(--surface-2); border-color: rgba(255,255,255,0.2); }
 
@@ -171,19 +193,35 @@
     font-size: 21px;
     font-weight: 600;
     line-height: 1.25;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     text-wrap: balance;
   }
-  .artifact-skel { display: grid; gap: 9px; margin-bottom: 22px; }
-  .artifact-skel i {
-    display: block;
-    height: 8px;
-    border-radius: 4px;
+  .artifact-fields { display: grid; gap: 8px; margin-bottom: 22px; }
+  .afield {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+    gap: 14px;
+    align-items: baseline;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
     background: var(--surface-2);
   }
-  .artifact-skel i:nth-child(2) { width: 92%; }
-  .artifact-skel i:nth-child(3) { width: 97%; }
-  .artifact-skel i:nth-child(4) { width: 64%; }
+  .afield span {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .afield code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .artifact-meta {
     display: flex;
     gap: 10px;
@@ -383,7 +421,7 @@
   <div class="wrap">
 
     <div class="hero">
-      <div>
+      <div class="hero-copy">
         <p class="kicker">A content engine for Framer sites</p>
         <h1>Your Framer site should <em>write its own blog.</em></h1>
         <p class="hero-sub">
@@ -402,15 +440,17 @@
           <span class="dot">●</span>
         </div>
         <div class="artifact-body">
-          <p class="field-label">Draft · grounded in your site</p>
+          <p class="field-label">Draft · ready to publish</p>
           <p class="artifact-title">How we built a multi-location booking flow in a weekend</p>
-          <div class="artifact-skel">
-            <i></i><i></i><i></i><i></i>
+          <div class="artifact-fields">
+            <div class="afield"><span>slug</span><code>/blog/multi-location-booking-flow</code></div>
+            <div class="afield"><span>meta</span><code>A behind-the-scenes look at shipping…</code></div>
+            <div class="afield"><span>keywords</span><code>booking flow · scheduling · multi-location</code></div>
           </div>
           <div class="artifact-meta">
-            <span class="chip accent">SEO 92</span>
-            <span class="chip">matches your tone</span>
-            <span class="chip">→ Framer CMS</span>
+            <span class="chip accent">→ Framer CMS</span>
+            <span class="chip">your tone</span>
+            <span class="chip">awaiting your approval</span>
           </div>
         </div>
       </div>
